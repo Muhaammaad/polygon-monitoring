@@ -1,0 +1,2 @@
+Bonjour {first_name},
+Vous avez été enregistré dans la zone de livraison. Note : {warning}.

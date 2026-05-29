@@ -1,0 +1,1 @@
+{first_name}, il tuo login è stato registrato al di fuori della zona. ({warning})

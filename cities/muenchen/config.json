@@ -1,0 +1,52 @@
+{
+  "city_code": "DE_MUN",
+  "language": {
+    "default": "DE",
+    "supported": ["DE"]
+  },
+  "zones": ["login_zone", "waiting_zone", "delivery_zone"],
+  "status": {
+    "mapping": {
+      "LOGIN_EVENT": "login_event",
+      "MONITORING_SUPPLY_STATUS_ONLINE": "online",
+      "MONITORING_SUPPLY_STATUS_EN_ROUTE": "delivering",
+      "MONITORING_SUPPLY_STATUS_ON_TRIP": "delivering",
+      "PAUSED": "paused",
+      "OFFLINE": "offline"
+    },
+    "groups": {
+      "login_candidates": ["login_event"],
+      "waiting_candidates": ["online"],
+      "delivery_candidates": ["delivering"]
+    },
+    "unknown_policy": "log_and_skip"
+  },
+  "checks": {
+    "login_check": {
+      "enabled": true,
+      "time_window_minutes": 8,
+      "status_group": "login_candidates",
+      "target_zone": "login_zone"
+    },
+    "center_check": {
+      "enabled": true,
+      "time_window_minutes": 10,
+      "status_group": "waiting_candidates",
+      "allowed_zones": ["waiting_zone"]
+    },
+    "delivery_check": {
+      "enabled": true,
+      "time_window_minutes": 8,
+      "status_group": "delivery_candidates",
+      "target_zone": "delivery_zone"
+    }
+  },
+  "notifications": {
+    "telegram": {
+      "enabled": true
+    },
+    "sms_fallback": {
+      "enabled": true
+    }
+  }
+}

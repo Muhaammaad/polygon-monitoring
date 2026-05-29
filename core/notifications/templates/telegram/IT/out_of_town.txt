@@ -1,0 +1,2 @@
+Ciao {first_name},
+Sei attualmente fuori dalla zona di consegna. Nota: {warning}.

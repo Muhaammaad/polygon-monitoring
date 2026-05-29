@@ -1,0 +1,2 @@
+Bonjour {first_name},
+Votre connexion a été enregistrée en dehors de la zone. Note : {warning}.

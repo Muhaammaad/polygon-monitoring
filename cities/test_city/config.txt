@@ -1,0 +1,36 @@
+# cities/test_city/config.yaml
+city_code: TEST
+
+language:
+  default: FR
+  supported:
+    - FR
+    - DE
+
+zones:
+  - login_zone
+
+status:
+  mapping:
+    "LOGIN_EVENT": login_event
+    "ONLINE": online
+    "OFFLINE": offline
+
+  groups:
+    login_candidates: [login_event]
+
+  unknown_policy: log_and_skip   # log_and_skip | treat_as_offline | fail_check
+
+checks:
+  login_check:
+    enabled: true
+    time_window_minutes: 3
+    excluded_minutes: 120
+    status_group: login_candidates
+    target_zone: login_zone
+
+notifications:
+  telegram:
+    enabled: true
+  sms_fallback:
+    enabled: true

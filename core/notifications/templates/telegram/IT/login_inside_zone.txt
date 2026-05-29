@@ -1,0 +1,2 @@
+Ciao {first_name},
+Il tuo login è stato registrato all'interno della zona. Nota: {warning}.

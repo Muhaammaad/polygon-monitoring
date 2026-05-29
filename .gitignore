@@ -1,0 +1,11 @@
+myenv
+db_setup.py
+.env
+venv/
+__pycache__/
+*.pyc
+.vscode/
+.DS_Store
+download.png
+
+

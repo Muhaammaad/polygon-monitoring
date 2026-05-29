@@ -1,0 +1,1 @@
+{first_name}, vous avez été enregistré dans la zone de livraison. ({warning})

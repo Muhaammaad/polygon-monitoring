@@ -1,0 +1,2 @@
+Hallo {first_name},
+Sie wurden in der Wartezone registriert. Hinweis: {warning}.

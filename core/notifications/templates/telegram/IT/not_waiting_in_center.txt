@@ -1,0 +1,2 @@
+Ciao {first_name},
+Non sei nella zona di attesa designata. Nota: {warning}.

@@ -1,0 +1,1 @@
+{first_name}, non sei nella zona di attesa designata. ({warning})

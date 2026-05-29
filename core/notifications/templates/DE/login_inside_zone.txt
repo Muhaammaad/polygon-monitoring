@@ -1,0 +1,2 @@
+Hallo {first_name},
+Ihr Login wurde innerhalb der Zone registriert. Hinweis: {warning}.

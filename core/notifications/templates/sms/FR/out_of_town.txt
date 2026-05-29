@@ -1,0 +1,1 @@
+{first_name}, vous êtes hors de la zone de livraison. ({warning})

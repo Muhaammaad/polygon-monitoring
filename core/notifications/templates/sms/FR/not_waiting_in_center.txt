@@ -1,0 +1,1 @@
+{first_name}, votre activité se trouve dans la zone d'attente. ({warning})\

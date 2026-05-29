@@ -1,0 +1,64 @@
+name: V2 CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  v2-ci:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: onduty_bi
+          MYSQL_USER: onduty
+          MYSQL_PASSWORD: changeme
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u$MYSQL_USER -p$MYSQL_PASSWORD"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: onduty
+      DB_PASSWORD: changeme
+      DB_NAME: onduty_bi
+      TELEGRAM_BOT_TOKEN: dummy
+      TWILIO_ACCOUNT_SID: dummy
+      TWILIO_AUTH_TOKEN: dummy
+      TWILIO_FROM_NUMBER: +41000000000
+      LOG_LEVEL: INFO
+      LOG_FORMAT: json
+      APP_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Wait for MySQL
+        run: |
+          for i in $(seq 1 30); do
+            (echo "SELECT 1" | mysql -h 127.0.0.1 -uonduty -pchangeme onduty_bi) && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Run V2 CI verification
+        run: |
+          python tests/ci/run_login_check_ci.py
