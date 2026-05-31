@@ -172,9 +172,13 @@ class PolygonRegistry:
                             f"{csv_file}:{line_num} - Invalid format (missing polygon name)"
                         )
                         continue
-                    
-                    wkt_str = row[0].strip()
-                    poly_name = row[1].strip()    
+
+                    # WKT may contain commas; treat the last column as the name.
+                    if len(row) == 2:
+                        wkt_str, poly_name = row[0].strip(), row[1].strip()
+                    else:
+                        wkt_str = ",".join(col for col in row[:-1]).strip()
+                        poly_name = row[-1].strip()
                     
                     if not wkt_str or not poly_name:
                         logger.warning(
@@ -450,6 +454,46 @@ class PolygonRegistry:
             stats['failed_loads'] = self.failed_loads
         
         return stats
+
+
+def load_all_cities(registry: Optional["PolygonRegistry"] = None) -> "PolygonRegistry":
+    """Load polygons for every configured city into the registry.
+
+    Replaces the former ``PolygonManager._load_all_polygons()`` startup path.
+    Used by ``get_polygon_manager()`` and CLI polygon validate/reload commands.
+
+    Args:
+        registry: Optional registry instance (defaults to the global singleton).
+
+    Returns:
+        The registry with all configured cities loaded.
+
+    Raises:
+        PolygonLoadError: If one or more cities fail to load.
+    """
+    # Lazy import avoids circular imports (core.config may import polygon helpers).
+    from core.config import get_config
+
+    registry = registry or get_polygon_registry()
+    cfg = get_config()
+    cities_base = str(Path(__file__).resolve().parents[2] / "cities")
+    errors: List[str] = []
+
+    for city_dir in cfg.cities:
+        city_config = cfg.get_city_config(city_dir)
+        if not city_config:
+            continue
+        city_code = city_config.city_code
+        if city_code in registry.get_loaded_cities():
+            continue
+        try:
+            registry.load_city(city_code, cities_base_path=cities_base, city_dir_name=city_dir)
+        except PolygonLoadError as exc:
+            errors.append(f"{city_code}: {exc}")
+
+    if errors:
+        raise PolygonLoadError("; ".join(errors))
+    return registry
 
 
 # Global registry instance
