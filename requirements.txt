@@ -5,3 +5,4 @@ PyYAML>=6.0
 pydantic>=1.8.2
 python-telegram-bot>=13.7
 twilio>=7.0.0
+pytest>=8.0.0

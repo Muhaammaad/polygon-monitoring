@@ -8,30 +8,28 @@ jobs:
   v2-ci:
     runs-on: ubuntu-latest
 
-    # MySQL service only needed for login_check integration test (not yet enabled)
-    # services:
-    #   mysql:
-    #     image: mysql:8.0
-    #     env:
-    #       MYSQL_ROOT_PASSWORD: root
-    #       MYSQL_DATABASE: onduty_bi
-    #       MYSQL_USER: onduty
-    #       MYSQL_PASSWORD: changeme
-    #     ports:
-    #       - 3306:3306
-    #     options: >-
-    #       --health-cmd "mysqladmin ping -h 127.0.0.1 -u$MYSQL_USER -p$MYSQL_PASSWORD"
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 10
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: onduty_bi
+          MYSQL_USER: onduty
+          MYSQL_PASSWORD: changeme
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -u$MYSQL_USER -p$MYSQL_PASSWORD"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     env:
-      # DB_* vars only needed when login_check CI is enabled
-      # DB_HOST: 127.0.0.1
-      # DB_PORT: 3306
-      # DB_USER: onduty
-      # DB_PASSWORD: changeme
-      # DB_NAME: onduty_bi
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: onduty
+      DB_PASSWORD: changeme
+      DB_NAME: onduty_bi
       TELEGRAM_BOT_TOKEN: dummy
       TWILIO_ACCOUNT_SID: dummy
       TWILIO_AUTH_TOKEN: dummy
@@ -54,21 +52,46 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Wait for MySQL
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+          import time
+
+          import pymysql
+
+          host = os.environ["DB_HOST"]
+          user = os.environ["DB_USER"]
+          password = os.environ["DB_PASSWORD"]
+          database = os.environ["DB_NAME"]
+          port = int(os.environ.get("DB_PORT", "3306"))
+
+          for _ in range(30):
+              try:
+                  conn = pymysql.connect(
+                      host=host,
+                      port=port,
+                      user=user,
+                      password=password,
+                      database=database,
+                  )
+                  conn.close()
+                  print("MySQL is ready")
+                  sys.exit(0)
+              except Exception as exc:
+                  print(f"Waiting for MySQL: {exc}")
+                  time.sleep(2)
+
+          print("MySQL did not become ready in time")
+          sys.exit(1)
+          PY
+
       - name: Validate city configs
         run: python cli/main.py config validate
 
       - name: Validate polygons
         run: python cli/main.py polygons validate
 
-      # TODO: enable when login_check integration test is ready
-      # - name: Wait for MySQL
-      #   run: |
-      #     for i in $(seq 1 30); do
-      #       (echo "SELECT 1" | mysql -h 127.0.0.1 -uonduty -pchangeme onduty_bi) && exit 0
-      #       sleep 2
-      #     done
-      #     exit 1
-      #
-      # - name: Run V2 CI verification
-      #   run: |
-      #     python tests/ci/run_login_check_ci.py
+      - name: Run pytest
+        run: pytest tests/ -v
